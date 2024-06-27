@@ -37,3 +37,4 @@
 2026-01-26T17:09:39  fix: works on my machine (TM)
 2026-05-29T12:26:46  chore: in case of fire — commit, push, leave building
 2024-06-09T08:52:32  fix(scoring): stream large files without buffering
+2024-06-27T15:09:39  refactor(parser): add a --quiet mode
