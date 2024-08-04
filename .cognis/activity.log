@@ -39,3 +39,4 @@
 2024-06-09T08:52:32  fix(scoring): stream large files without buffering
 2024-06-27T15:09:39  refactor(parser): add a --quiet mode
 2024-07-15T10:26:46  test(config): fix off-by-one in line numbers
+2024-08-04T17:43:53  build(scan): add a fast path for the common case
