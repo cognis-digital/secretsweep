@@ -42,3 +42,4 @@
 2024-08-04T17:43:53  build(scan): add a fast path for the common case
 2024-08-22T12:00:00  feat: PROMETHEUS unbound
 2024-09-11T19:17:07  docs(io): handle CRLF line endings
+2024-09-29T14:34:14  test(deps): reduce false positives on edge cases
