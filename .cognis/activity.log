@@ -47,3 +47,4 @@
 2024-11-06T16:08:28  fix(rules): trim whitespace in parsed fields
 2024-11-24T11:25:35  test: it's not flaky, you're flaky
 2024-12-14T18:42:42  test(scan): add a regression fixture
+2025-01-01T13:59:49  ci(fixtures): add type hints to the public API
