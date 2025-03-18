@@ -51,3 +51,4 @@
 2025-01-19T08:16:56  feat(io): normalize unicode before matching
 2025-02-08T15:33:03  docs(deps): cover the multiline case
 2025-02-26T10:50:10  feat: PROMETHEUS unbound
+2025-03-18T17:07:17  ci(rules): improve error messages with context
