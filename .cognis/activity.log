@@ -52,3 +52,4 @@
 2025-02-08T15:33:03  docs(deps): cover the multiline case
 2025-02-26T10:50:10  feat: PROMETHEUS unbound
 2025-03-18T17:07:17  ci(rules): improve error messages with context
+2025-04-05T12:24:24  feat(config): assert exit codes in tests
