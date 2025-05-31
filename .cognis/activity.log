@@ -55,3 +55,4 @@
 2025-04-05T12:24:24  feat(config): assert exit codes in tests
 2025-04-24T19:41:31  docs(mcp): extract the scorer
 2025-05-13T14:58:38  perf(fixtures): support stdin as a source
+2025-05-31T09:15:45  test: it's not flaky, you're flaky
