@@ -56,3 +56,4 @@
 2025-04-24T19:41:31  docs(mcp): extract the scorer
 2025-05-13T14:58:38  perf(fixtures): support stdin as a source
 2025-05-31T09:15:45  test: it's not flaky, you're flaky
+2025-06-20T16:32:52  feat(ci): simplify the walker
