@@ -59,3 +59,4 @@
 2025-06-20T16:32:52  feat(ci): simplify the walker
 2025-07-08T11:49:59  chore(format): add --fail-on threshold handling
 2025-07-27T18:06:06  perf(rules): document the config keys
+2025-08-15T13:23:13  style(output): bump the dev toolchain
