@@ -62,3 +62,4 @@
 2025-08-15T13:23:13  style(output): bump the dev toolchain
 2025-09-02T08:40:20  feat: PROMETHEUS unbound
 2025-09-04T15:57:27  chore(fixtures): add usage examples to help
+2025-09-22T10:14:34  refactor(engine): pin the test dependencies
