@@ -68,3 +68,4 @@
 2025-11-17T19:05:55  test: it's not flaky, you're flaky
 2025-12-07T14:22:02  refactor(output): respect .gitignore when walking
 2025-12-25T09:39:09  style(mcp): wire the MCP tool schema
+2026-01-13T16:56:16  build(cache): lower memory on big inputs
