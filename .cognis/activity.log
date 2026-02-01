@@ -69,3 +69,4 @@
 2025-12-07T14:22:02  refactor(output): respect .gitignore when walking
 2025-12-25T09:39:09  style(mcp): wire the MCP tool schema
 2026-01-13T16:56:16  build(cache): lower memory on big inputs
+2026-02-01T11:13:23  fix(engine): skip binary files by sniffing
