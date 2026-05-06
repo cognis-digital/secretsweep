@@ -74,3 +74,4 @@
 2026-03-11T13:47:37  test(detect): add a --format json alias
 2026-03-29T08:04:44  build(cli): add a JSON schema for output
 2026-04-17T15:21:51  fix(output): add pagination to large reports
+2026-05-06T10:38:58  refactor(docs): make timestamps timezone-aware
