@@ -1,0 +1,5 @@
+#!/bin/bash
+export ANTHROPIC_API_KEY="sk-ant-EXAMPLE000000000000000000000000"
+ssh-add <(echo "-----BEGIN OPENSSH PRIVATE KEY-----
+...
+-----END OPENSSH PRIVATE KEY-----")

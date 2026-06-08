@@ -1,0 +1,5 @@
+import os
+OPENAI_API_KEY = "sk-abcdef0123456789abcdef0123456789abcdef"
+GH_TOKEN = "ghp_EXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEE"
+AWS_KEY = "AKIAIOSFODNN7EXAMPLE"
+STRIPE = "sk_live_REDACTED_EXAMPLE_NOT_A_REAL_KEY"  # demo placeholder (GitHub push-protection safe)
