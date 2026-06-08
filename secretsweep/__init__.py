@@ -1,11 +1,44 @@
-"""secretsweep — part of the Cognis Neural Suite."""
-try:  # re-export the tool's public API + identity from core
-    from secretsweep.core import *  # noqa: F401,F403
-except Exception:  # pragma: no cover
-    pass
-try:
-    from secretsweep.core import TOOL_NAME, TOOL_VERSION
-except Exception:  # pragma: no cover
-    TOOL_NAME = "secretsweep"
-    TOOL_VERSION = "0.1.0"
-__version__ = TOOL_VERSION
+"""SECRETSWEEP — zero-install secret scanner (gitleaks/trufflehog-style).
+
+Bundled provider regex pack (50+ secret types), Shannon-entropy detection,
+an allowlist layer, inline allow comments and a baseline for CI. Standard
+library only.
+"""
+
+from .core import (
+    TOOL_NAME,
+    TOOL_VERSION,
+    SEVERITY_ORDER,
+    RULES,
+    Rule,
+    Allowlist,
+    Engine,
+    Finding,
+    shannon_entropy,
+    rule_by_id,
+    sort_findings,
+    summarize,
+    load_config,
+    load_baseline,
+    write_baseline,
+    DEFAULT_STOPWORDS,
+)
+
+__all__ = [
+    "TOOL_NAME",
+    "TOOL_VERSION",
+    "SEVERITY_ORDER",
+    "RULES",
+    "Rule",
+    "Allowlist",
+    "Engine",
+    "Finding",
+    "shannon_entropy",
+    "rule_by_id",
+    "sort_findings",
+    "summarize",
+    "load_config",
+    "load_baseline",
+    "write_baseline",
+    "DEFAULT_STOPWORDS",
+]
