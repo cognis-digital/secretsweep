@@ -1,30 +1,11 @@
-"""SECRETSWEEP - repo secret scanner + auto-rotator across providers.
-
-Standard-library only. Zero install. Real detection + redaction logic.
-"""
-from .core import (
-    Detector,
-    Finding,
-    DETECTORS,
-    scan_text,
-    scan_path,
-    redact,
-    rotation_plan,
-    shannon_entropy,
-)
-
-TOOL_NAME = "secretsweep"
-TOOL_VERSION = "1.0.0"
-
-__all__ = [
-    "TOOL_NAME",
-    "TOOL_VERSION",
-    "Detector",
-    "Finding",
-    "DETECTORS",
-    "scan_text",
-    "scan_path",
-    "redact",
-    "rotation_plan",
-    "shannon_entropy",
-]
+"""secretsweep — part of the Cognis Neural Suite."""
+try:  # re-export the tool's public API + identity from core
+    from secretsweep.core import *  # noqa: F401,F403
+except Exception:  # pragma: no cover
+    pass
+try:
+    from secretsweep.core import TOOL_NAME, TOOL_VERSION
+except Exception:  # pragma: no cover
+    TOOL_NAME = "secretsweep"
+    TOOL_VERSION = "0.1.0"
+__version__ = TOOL_VERSION
