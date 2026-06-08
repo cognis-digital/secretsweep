@@ -1,0 +1,10 @@
+{
+  "name": "@cognis/secretsweep",
+  "version": "0.2.0",
+  "description": "JavaScript port of secretsweep (Cognis Neural Suite)",
+  "bin": {
+    "secretsweep": "index.js"
+  },
+  "license": "LicenseRef-COCL-1.0",
+  "type": "module"
+}
