@@ -1,14 +1,21 @@
-# Installing secretsweep
+# Installing secretsweep — many ways, every platform
 
-`secretsweep` runs anywhere Python 3.10+ runs. Pick your OS:
+`secretsweep` is Python 3.10+ and **standard-library only**, so it runs anywhere. Pick whatever fits your stack:
 
-| OS | One-liner |
+| Method | Command |
 |---|---|
-| **Linux** | `bash scripts/setup-linux.sh` (apt/dnf/pacman/apk/zypper auto-detected) |
-| **macOS** | `bash scripts/setup-macos.sh` (Homebrew) |
-| **Windows** | `powershell -f scripts/setup-windows.ps1` (winget) |
-| **Any (pip)** | `pip install cognis-secretsweep` |
+| **pip** (from source — works today) | `pip install "git+https://github.com/cognis-digital/secretsweep.git"` |
+| **pipx** (isolated CLI) | `pipx install "git+https://github.com/cognis-digital/secretsweep.git"` |
+| **uv** (fast) | `uv tool install "git+https://github.com/cognis-digital/secretsweep.git"` |
+| **pip / PyPI** (when published) | `pip install cognis-secretsweep` |
+| **Homebrew** (tap) | `brew install cognis-digital/tap/secretsweep` |
 | **Docker** | `docker run --rm ghcr.io/cognis-digital/secretsweep:latest --help` |
-| **Devcontainer** | open in VS Code → "Reopen in Container" |
+| **curl \| sh** (one-liner) | `curl -fsSL https://raw.githubusercontent.com/cognis-digital/secretsweep/main/install.sh \| sh` |
+| **from clone** | `git clone https://github.com/cognis-digital/secretsweep && cd secretsweep && pip install -e ".[dev]"` |
+| **Dev Container** | open in VS Code → *Reopen in Container* |
+| **Linux / macOS / Windows** | `scripts/setup-linux.sh` · `scripts/setup-macos.sh` · `scripts/setup-windows.ps1` |
+| **Cloud (AWS/Azure/GCP/k8s)** | see [`docs/DEPLOY.md`](docs/DEPLOY.md) |
 
-All ports of the tool (Python/JS/Go/Rust) live in `ports/`.
+Other language ports (JS / Go / Rust) live in [`ports/`](ports/).
+
+> PyPI/Homebrew names are reserved for release; the `git+https` forms work right now.
