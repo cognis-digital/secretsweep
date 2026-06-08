@@ -36,7 +36,11 @@ Repo secret scanner + auto-rotator across providers — without standing up heav
 <a name="features"></a>
 ## Features
 
-- ✅ Scan
+- ✅ Shannon Entropy
+- ✅ Redact
+- ✅ Scan Text
+- ✅ Scan Path
+- ✅ Rotation Plan
 - ✅ Runs on Linux/macOS/Windows · Docker · devcontainer
 - ✅ Ports in Python, JavaScript, Go, and Rust (`ports/`)
 
