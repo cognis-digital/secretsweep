@@ -1,11 +1,30 @@
-"""
-SECRETSWEEP — Repo secret scanner + auto-rotator across providers
-Part of the Cognis Neural Suite by Cognis Digital.
-https://cognis.digital · MIT License
-"""
-from secretsweep.core import scan, TOOL_NAME, TOOL_VERSION
+"""SECRETSWEEP - repo secret scanner + auto-rotator across providers.
 
-__version__ = TOOL_VERSION
-__author__ = "Cognis Digital"
-__license__ = "MIT"
-__all__ = ["scan", "TOOL_NAME", "TOOL_VERSION", "__version__"]
+Standard-library only. Zero install. Real detection + redaction logic.
+"""
+from .core import (
+    Detector,
+    Finding,
+    DETECTORS,
+    scan_text,
+    scan_path,
+    redact,
+    rotation_plan,
+    shannon_entropy,
+)
+
+TOOL_NAME = "secretsweep"
+TOOL_VERSION = "1.0.0"
+
+__all__ = [
+    "TOOL_NAME",
+    "TOOL_VERSION",
+    "Detector",
+    "Finding",
+    "DETECTORS",
+    "scan_text",
+    "scan_path",
+    "redact",
+    "rotation_plan",
+    "shannon_entropy",
+]
