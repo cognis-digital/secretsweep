@@ -10,6 +10,7 @@ from .core import (
     TOOL_VERSION,
     SEVERITY_ORDER,
     RULES,
+    DETECTORS,
     Rule,
     Allowlist,
     Engine,
@@ -22,6 +23,9 @@ from .core import (
     load_baseline,
     write_baseline,
     DEFAULT_STOPWORDS,
+    redact,
+    rotation_plan,
+    scan_text,
 )
 
 __all__ = [
@@ -29,6 +33,7 @@ __all__ = [
     "TOOL_VERSION",
     "SEVERITY_ORDER",
     "RULES",
+    "DETECTORS",
     "Rule",
     "Allowlist",
     "Engine",
@@ -41,4 +46,7 @@ __all__ = [
     "load_baseline",
     "write_baseline",
     "DEFAULT_STOPWORDS",
+    "redact",
+    "rotation_plan",
+    "scan_text",
 ]

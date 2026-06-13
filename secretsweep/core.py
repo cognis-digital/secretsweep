@@ -585,6 +585,19 @@ class Finding:
     entropy: float
     fingerprint: str
 
+    # ------------------------------------------------------------------
+    # Convenience aliases
+    # ------------------------------------------------------------------
+    @property
+    def detector_id(self) -> str:
+        """Alias for :attr:`rule_id` (compatibility with older API)."""
+        return self.rule_id
+
+    @property
+    def provider(self) -> str:
+        """Provider name derived from the rule id (e.g. ``"aws"``, ``"github"``)."""
+        return self.rule_id.split("-")[0]
+
     def to_dict(self) -> dict:
         return {
             "rule_id": self.rule_id,
@@ -772,3 +785,124 @@ def summarize(findings: list[Finding]) -> dict:
         "by_severity": by_sev,
         "by_rule": by_rule,
     }
+
+
+# ---------------------------------------------------------------------------
+# Public aliases / convenience helpers
+# ---------------------------------------------------------------------------
+
+# DETECTORS is a public alias for RULES (same object, different name style).
+DETECTORS: tuple[Rule, ...] = RULES
+
+
+def redact(secret: str) -> str:
+    """Return a redacted copy of *secret* (public alias for ``_redact``)."""
+    return _redact(secret)
+
+
+# Provider name derived from the first dash-delimited segment of a rule id.
+# e.g. "aws-access-key-id" -> "aws", "github-pat" -> "github".
+def _provider_for_rule(rule_id: str) -> str:
+    return rule_id.split("-")[0]
+
+
+# Per-provider rotation guidance bundled with the tool so callers get
+# actionable next steps without a network round-trip.
+_ROTATION_STEPS: dict[str, list[str]] = {
+    "aws": [
+        "Go to IAM console → Users → Security credentials.",
+        "Create a new access key before deleting the exposed one.",
+        "Update all services/CI with the new key.",
+        "Deactivate then delete the old key.",
+        "Enable CloudTrail to audit any accesses that occurred.",
+    ],
+    "github": [
+        "Go to GitHub → Settings → Developer settings → Personal access tokens.",
+        "Delete or regenerate the exposed token immediately.",
+        "Audit recent API activity via the token's last-used timestamp.",
+        "Create a new token with minimal required scopes.",
+    ],
+    "stripe": [
+        "Open the Stripe Dashboard → Developers → API keys.",
+        "Roll the exposed key using the 'Roll key' button.",
+        "Update all integrations with the new key.",
+        "Check Stripe Radar for unusual payment activity.",
+    ],
+    "slack": [
+        "Go to api.slack.com → Your Apps → select the app → OAuth & Permissions.",
+        "Revoke the exposed token.",
+        "Re-install the app to generate a new token.",
+        "Audit the audit log in Slack for suspicious bot actions.",
+    ],
+    "gcp": [
+        "Open the GCP Console → APIs & Services → Credentials.",
+        "Delete the exposed API key or rotate the service-account key.",
+        "Create a replacement with minimal IAM permissions.",
+        "Check Cloud Audit Logs for activity on the compromised credential.",
+    ],
+    "azure": [
+        "Open the Azure Portal → Storage account → Access keys.",
+        "Regenerate the affected key.",
+        "Update all connection strings and apps using that key.",
+        "Review Azure Monitor / Activity Log for suspicious operations.",
+    ],
+    "gitlab": [
+        "Go to GitLab → User settings → Access tokens.",
+        "Revoke the exposed token.",
+        "Create a new token with the minimum required scopes.",
+    ],
+    "generic": [
+        "Treat the secret as compromised — rotate it immediately.",
+        "Search your commit history and remove the secret (use git-filter-repo).",
+        "Audit access logs for the affected service.",
+        "Store the replacement in a secrets manager (Vault, AWS SSM, etc.).",
+    ],
+}
+
+
+def rotation_plan(findings: "list[Finding]") -> list[dict]:
+    """Return a prioritised rotation checklist for *findings*.
+
+    Each entry describes the provider, the redacted match, and actionable
+    rotation steps so the caller can immediately start remediation.
+    """
+    seen_fps: set[str] = set()
+    plan: list[dict] = []
+    for f in sort_findings(findings):
+        if f.fingerprint in seen_fps:
+            continue
+        seen_fps.add(f.fingerprint)
+        provider = _provider_for_rule(f.rule_id)
+        steps = _ROTATION_STEPS.get(provider, _ROTATION_STEPS["generic"])
+        plan.append({
+            "provider": provider,
+            "rule_id": f.rule_id,
+            "severity": f.severity,
+            "path": f.path,
+            "line": f.line,
+            "match": f.match,
+            "rotation_steps": steps,
+        })
+    return plan
+
+
+def scan_text(text: str, path: str = "<text>",
+              providers: "Optional[list[str]]" = None) -> "list[Finding]":
+    """Convenience wrapper: scan *text* with default engine settings.
+
+    Args:
+        text:      The raw text content to scan.
+        path:      Label used in ``Finding.path`` (default ``"<text>"``).
+        providers: If given, only findings whose provider matches one of the
+                   listed names are returned (e.g. ``["github", "aws"]``).
+
+    Returns:
+        List of :class:`Finding` objects, sorted by severity.
+    """
+    engine = Engine()
+    findings = engine.scan_text(text, path)
+    if providers is not None:
+        keep = {p.lower() for p in providers}
+        findings = [f for f in findings
+                    if _provider_for_rule(f.rule_id) in keep]
+    return findings

@@ -16,9 +16,15 @@
 </div>
 
 ```bash
-pip install cognis-secretsweep
+pip install "git+https://github.com/cognis-digital/secretsweep.git"
 secretsweep scan .            # → prioritized findings in seconds
 ```
+
+<!-- cognis:layman:start -->
+## What is this?
+
+Secretsweep is a command-line tool that scans your code, config files, and repositories for accidentally committed secrets such as API keys, passwords, and cloud credentials. It checks over 50 types of secrets from providers like AWS, GitHub, Stripe, and Slack, and flags any it finds so you can rotate them before they are misused. When a secret is found, the tool also gives you step-by-step instructions for revoking and replacing it with a new one. It is aimed at developers and security teams who want to catch leaked credentials early, either locally or as part of an automated CI/CD pipeline.
+<!-- cognis:layman:end -->
 
 ## Contents
 
@@ -47,10 +53,46 @@ Repo secret scanner + auto-rotator across providers — without standing up heav
 <div align="right"><a href="#top">↑ back to top</a></div>
 
 <a name="quick-start"></a>
+<!-- cognis:install:start -->
+## Install
+
+`secretsweep` is source-available (not published to PyPI) — every method below installs
+straight from GitHub. Pick whichever you prefer; the one-line scripts auto-detect
+the best tool available on your machine.
+
+**One-liner (Linux / macOS):**
+```sh
+curl -fsSL https://raw.githubusercontent.com/cognis-digital/secretsweep/HEAD/install.sh | sh
+```
+
+**One-liner (Windows PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/cognis-digital/secretsweep/HEAD/install.ps1 | iex
+```
+
+**Or install manually — any one of:**
+```sh
+pipx install "git+https://github.com/cognis-digital/secretsweep.git"     # isolated (recommended)
+uv tool install "git+https://github.com/cognis-digital/secretsweep.git"  # uv
+pip install "git+https://github.com/cognis-digital/secretsweep.git"      # pip
+```
+
+**From source:**
+```sh
+git clone https://github.com/cognis-digital/secretsweep.git
+cd secretsweep && pip install .
+```
+
+Then run:
+```sh
+secretsweep --help
+```
+<!-- cognis:install:end -->
+
 ## Quick start
 
 ```bash
-pip install cognis-secretsweep
+pip install "git+https://github.com/cognis-digital/secretsweep.git"
 secretsweep --version
 secretsweep scan .                       # scan current project
 secretsweep scan . --format json         # machine-readable

@@ -171,7 +171,9 @@ def test_cli_clean_scan_exit_zero(tmp_path, capsys):
 def test_cli_rules_lists_pack(capsys):
     rc = main(["rules", "--format", "json"])
     assert rc == 0
-    rules = json.loads(capsys.readouterr().out)
+    payload = json.loads(capsys.readouterr().out)
+    # JSON output wraps rules in {"detectors": [...], "count": N}
+    rules = payload["detectors"]
     assert len(rules) >= 40
 
 

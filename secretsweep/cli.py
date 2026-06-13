@@ -17,17 +17,18 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 
 from . import TOOL_NAME, TOOL_VERSION
 from .core import (
     RULES,
     SEVERITY_ORDER,
-    Allowlist,
     Engine,
     Finding,
     load_baseline,
     load_config,
+    rotation_plan,
     shannon_entropy,
     sort_findings,
     summarize,
@@ -56,16 +57,20 @@ def _table(rows: list[list[str]], headers: list[str]) -> str:
     return "\n".join(out)
 
 
-def _render_findings(findings: list[Finding], fmt: str, label: str = "found"
-                     ) -> None:
+def _render_findings(findings: list[Finding], fmt: str, label: str = "found",
+                     include_rotation: bool = False) -> None:
     findings = sort_findings(findings)
     if fmt == "json":
-        _print_json({
+        obj: dict = {
             "tool": TOOL_NAME,
             "version": TOOL_VERSION,
+            "count": len(findings),
             "summary": summarize(findings),
             "findings": [f.to_dict() for f in findings],
-        })
+        }
+        if include_rotation:
+            obj["rotation_plan"] = rotation_plan(findings)
+        _print_json(obj)
         return
     if not findings:
         print("No secrets detected. Clean.")
@@ -138,13 +143,19 @@ def _severity_filter(findings, floor_name):
 # ---------------------------------------------------------------------------
 def _cmd_scan(args) -> int:
     engine = _build_engine(args)
+    # Validate that explicitly provided paths exist.
+    for p in (args.paths or []):
+        if not (p == "-" or os.path.exists(p)):
+            print(f"error: path not found: {p}", file=sys.stderr)
+            return EXIT_ERR
     try:
         findings = _collect(engine, args.paths or [])
     except OSError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return EXIT_ERR
     findings = _severity_filter(findings, args.severity)
-    _render_findings(findings, args.format)
+    include_rotation = getattr(args, "rotate", False)
+    _render_findings(findings, args.format, include_rotation=include_rotation)
     return EXIT_FINDINGS if findings else EXIT_OK
 
 
@@ -190,7 +201,8 @@ def _cmd_baseline(args) -> int:
 
 def _cmd_rules(args) -> int:
     if args.format == "json":
-        _print_json([r.to_dict() for r in RULES])
+        _print_json({"detectors": [r.to_dict() for r in RULES],
+                     "count": len(RULES)})
         return EXIT_OK
     rows = [[r.id, r.severity.upper(), r.description] for r in RULES]
     print(_table(rows, ["id", "severity", "description"]))
@@ -269,6 +281,8 @@ def build_parser() -> argparse.ArgumentParser:
     _add_scan_args(sc)
     sc.add_argument("--baseline", metavar="FILE",
                     help="suppress findings whose fingerprint is in this file")
+    sc.add_argument("--rotate", action="store_true",
+                    help="include a per-finding rotation checklist in the output")
     sc.set_defaults(func=_cmd_scan)
 
     vf = sub.add_parser("verify",
@@ -290,6 +304,11 @@ def build_parser() -> argparse.ArgumentParser:
     rl = sub.add_parser("rules", help="list bundled provider rules",
                         parents=[fmt_parent])
     rl.set_defaults(func=_cmd_rules)
+
+    # "detectors" is a user-friendly alias for "rules".
+    det = sub.add_parser("detectors", help="list bundled detectors (alias for 'rules')",
+                         parents=[fmt_parent])
+    det.set_defaults(func=_cmd_rules)
 
     en = sub.add_parser("entropy", help="compute Shannon entropy of a string",
                         parents=[fmt_parent])
