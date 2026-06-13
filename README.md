@@ -20,6 +20,34 @@ pip install cognis-secretsweep
 secretsweep scan .            # → prioritized findings in seconds
 ```
 
+## Usage — step by step
+
+`secretsweep` is a zero-install secret scanner with 50+ provider rules, Shannon-entropy detection, and allowlist/baseline support. Console script: `secretsweep`.
+
+1. **Install**:
+   ```bash
+   pipx install secretsweep     # or: pip install secretsweep
+   ```
+2. **Scan files, a directory, or stdin** for secrets:
+   ```bash
+   secretsweep scan ./src --format json | jq '.summary'
+   cat config.yml | secretsweep scan
+   ```
+   Exit `2` = secrets found, `0` = clean, `1` = error.
+3. **Record a baseline** of currently-accepted findings so existing secrets don't block the build:
+   ```bash
+   secretsweep baseline . --output .secretsweep.baseline
+   ```
+4. **Verify against the baseline in CI** — fail only on *new* secrets at/above a severity floor:
+   ```bash
+   secretsweep verify . --baseline .secretsweep.baseline --severity high
+   ```
+5. **Tune the scan** with allowlists and the entropy detector, or list the bundled rule pack:
+   ```bash
+   secretsweep scan . --exclude '*/tests/*' --allow-regex 'AKIA_EXAMPLE_.*' --entropy-threshold 4.5
+   secretsweep rules --format json
+   ```
+
 ## Contents
 
 - [Why secretsweep?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
