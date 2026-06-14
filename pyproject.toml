@@ -36,3 +36,6 @@ secretsweep = "secretsweep.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["secretsweep"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
