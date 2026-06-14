@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cognis-secretsweep"
-version = "0.1.0"
+version = "0.1.1"
 description = "Repo secret scanner + auto-rotator across providers"
 authors = [{name = "Cognis Digital", email = "suite@cognis.digital"}]
 license = {text = "LicenseRef-COCL-1.0"}
@@ -21,6 +21,7 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
+connect = ["cognis-connect @ git+https://github.com/cognis-digital/cognis-connect.git"]
 mcp = ["mcp>=1.0"]
 web = ["fastapi>=0.110", "uvicorn>=0.27"]
 dev = ["pytest>=8.0"]
@@ -30,6 +31,7 @@ Homepage = "https://cognis.digital"
 Repository = "https://github.com/cognis-digital/secretsweep"
 
 [project.scripts]
+"secretsweep-emit" = "secretsweep.connect:emit_main"
 secretsweep = "secretsweep.cli:main"
 
 [tool.hatch.build.targets.wheel]
