@@ -437,9 +437,17 @@ class Allowlist:
     @classmethod
     def from_iterables(cls, literals=(), regexes=(), path_globs=(),
                        stopwords=None) -> "Allowlist":
+        compiled: list[re.Pattern] = []
+        for pat in regexes:
+            try:
+                compiled.append(re.compile(pat))
+            except re.error as exc:
+                raise ValueError(
+                    f"Invalid allowlist regex {pat!r}: {exc}"
+                ) from exc
         return cls(
             literals=set(literals),
-            regexes=[re.compile(r) for r in regexes],
+            regexes=compiled,
             path_globs=list(path_globs),
             stopwords=tuple(stopwords) if stopwords is not None
             else DEFAULT_STOPWORDS,
@@ -521,11 +529,32 @@ def load_config(path: str) -> dict:
           "entropy": {"enabled": true, "threshold": 4.3, "min_len": 20},
           "disabled_rules": ["stripe-publishable-key"]
         }
+
+    Raises:
+        ValueError: if the file exists but contains invalid JSON.
+        OSError: if the file exists but cannot be read.
     """
     if not path or not os.path.isfile(path):
         return {}
-    with open(path, "r", encoding="utf-8") as fh:
-        return json.load(fh)
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            raw = fh.read()
+    except OSError as exc:
+        raise OSError(f"Cannot read config file {path!r}: {exc}") from exc
+    if not raw.strip():
+        return {}
+    try:
+        result = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            f"Config file {path!r} contains invalid JSON: {exc}"
+        ) from exc
+    if not isinstance(result, dict):
+        raise ValueError(
+            f"Config file {path!r} must be a JSON object, got "
+            f"{type(result).__name__}"
+        )
+    return result
 
 
 def load_baseline(path: str) -> set[str]:
@@ -533,29 +562,53 @@ def load_baseline(path: str) -> set[str]:
 
     Accepts either a bare ``["fp1", "fp2"]`` list or a
     ``{"fingerprints": [...]}`` object, or a newline-delimited text file.
+
+    Raises:
+        OSError: if the file exists but cannot be read.
     """
     if not path or not os.path.isfile(path):
         return set()
-    with open(path, "r", encoding="utf-8") as fh:
-        raw = fh.read().strip()
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            raw = fh.read().strip()
+    except OSError as exc:
+        raise OSError(f"Cannot read baseline file {path!r}: {exc}") from exc
     if not raw:
         return set()
     try:
         data = json.loads(raw)
         if isinstance(data, dict):
-            return set(data.get("fingerprints", []))
-        return set(data)
+            fps = data.get("fingerprints", [])
+            if not isinstance(fps, list):
+                raise ValueError(
+                    f"Baseline {path!r}: 'fingerprints' must be a list"
+                )
+            return set(str(fp) for fp in fps if fp)
+        if isinstance(data, list):
+            return set(str(fp) for fp in data if fp)
+        raise ValueError(
+            f"Baseline {path!r} must be a JSON list or object, got "
+            f"{type(data).__name__}"
+        )
     except json.JSONDecodeError:
+        # Fall back to newline-delimited text format.
         return {ln.strip() for ln in raw.splitlines() if ln.strip()
                 and not ln.lstrip().startswith("#")}
 
 
 def write_baseline(path: str, findings: "list[Finding]") -> int:
-    """Write the fingerprints of ``findings`` to a baseline file. Returns n."""
+    """Write the fingerprints of ``findings`` to a baseline file. Returns n.
+
+    Raises:
+        OSError: if the file cannot be created or written.
+    """
     fps = sorted({f.fingerprint for f in findings})
-    with open(path, "w", encoding="utf-8") as fh:
-        json.dump({"tool": TOOL_NAME, "version": TOOL_VERSION,
-                   "fingerprints": fps}, fh, indent=2)
+    try:
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump({"tool": TOOL_NAME, "version": TOOL_VERSION,
+                       "fingerprints": fps}, fh, indent=2)
+    except OSError as exc:
+        raise OSError(f"Cannot write baseline to {path!r}: {exc}") from exc
     return len(fps)
 
 
@@ -732,6 +785,10 @@ class Engine:
     def scan_path(self, root: str) -> list[Finding]:
         if os.path.isfile(root):
             return self.scan_file(root)
+        if not os.path.exists(root):
+            raise FileNotFoundError(
+                f"scan_path: path does not exist: {root!r}"
+            )
         findings: list[Finding] = []
         for dirpath, dirnames, filenames in os.walk(root):
             # skip obvious VCS / dependency dirs

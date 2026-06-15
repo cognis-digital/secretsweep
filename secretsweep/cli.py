@@ -87,14 +87,23 @@ def _render_findings(findings: list[Finding], fmt: str, label: str = "found",
 # ---------------------------------------------------------------------------
 # Engine construction from common args
 # ---------------------------------------------------------------------------
-def _build_engine(args) -> Engine:
-    cfg = load_config(getattr(args, "config", None) or "")
+def _build_engine(args) -> "tuple[Engine, None] | tuple[None, str]":
+    """Return ``(engine, None)`` on success or ``(None, error_message)``."""
+    import re as _re
+
+    cfg_path = getattr(args, "config", None) or ""
+    try:
+        cfg = load_config(cfg_path)
+    except (OSError, ValueError) as exc:
+        return None, f"error: {exc}"
+
     baseline: set[str] = set()
     bpath = getattr(args, "baseline", None)
-    # In verify mode the baseline is the thing we compare against; in plain
-    # scan mode a --baseline still suppresses known findings if supplied.
     if bpath:
-        baseline = load_baseline(bpath)
+        try:
+            baseline = load_baseline(bpath)
+        except (OSError, ValueError) as exc:
+            return None, f"error: {exc}"
 
     eng = Engine.from_config(cfg, baseline=baseline)
 
@@ -102,7 +111,10 @@ def _build_engine(args) -> Engine:
     if getattr(args, "no_entropy", False):
         eng.entropy_enabled = False
     if getattr(args, "entropy_threshold", None) is not None:
-        eng.entropy_threshold = args.entropy_threshold
+        thr = args.entropy_threshold
+        if thr < 0:
+            return None, "error: --entropy-threshold must be >= 0"
+        eng.entropy_threshold = thr
     if getattr(args, "no_inline_allow", False):
         eng.respect_inline_allow = False
 
@@ -113,10 +125,13 @@ def _build_engine(args) -> Engine:
     if extra_lit or extra_rx or extra_glob:
         al = eng.allowlist
         al.literals.update(extra_lit)
-        import re as _re
-        al.regexes.extend(_re.compile(r) for r in extra_rx)
+        for pat in extra_rx:
+            try:
+                al.regexes.append(_re.compile(pat))
+            except _re.error as exc:
+                return None, f"error: invalid --allow-regex {pat!r}: {exc}"
         al.path_globs.extend(extra_glob)
-    return eng
+    return eng, None
 
 
 def _collect(engine: Engine, paths) -> list[Finding]:
@@ -142,7 +157,10 @@ def _severity_filter(findings, floor_name):
 # Subcommand handlers
 # ---------------------------------------------------------------------------
 def _cmd_scan(args) -> int:
-    engine = _build_engine(args)
+    engine, err = _build_engine(args)
+    if err:
+        print(err, file=sys.stderr)
+        return EXIT_ERR
     # Validate that explicitly provided paths exist.
     for p in (args.paths or []):
         if not (p == "-" or os.path.exists(p)):
@@ -161,7 +179,10 @@ def _cmd_scan(args) -> int:
 
 def _cmd_verify(args) -> int:
     """Scan and fail only on findings not already in the baseline."""
-    engine = _build_engine(args)   # baseline already wired into the engine
+    engine, err = _build_engine(args)   # baseline already wired into the engine
+    if err:
+        print(err, file=sys.stderr)
+        return EXIT_ERR
     try:
         findings = _collect(engine, args.paths or [])
     except OSError as exc:
@@ -181,13 +202,20 @@ def _cmd_baseline(args) -> int:
     # Build engine WITHOUT a baseline so we capture everything currently
     # present, then write it out as the accepted set.
     args.baseline = None
-    engine = _build_engine(args)
+    engine, err = _build_engine(args)
+    if err:
+        print(err, file=sys.stderr)
+        return EXIT_ERR
     try:
         findings = _collect(engine, args.paths or [])
     except OSError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return EXIT_ERR
-    n = write_baseline(args.output, findings)
+    try:
+        n = write_baseline(args.output, findings)
+    except OSError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return EXIT_ERR
     if args.format == "json":
         _print_json({"tool": TOOL_NAME, "baseline": args.output,
                      "fingerprints_written": n,
@@ -327,7 +355,14 @@ def main(argv=None) -> int:
     # honor top-level --format if the subparser didn't set one
     if not hasattr(args, "format"):
         args.format = "table"
-    return args.func(args)
+    try:
+        return args.func(args)
+    except KeyboardInterrupt:
+        print("\nInterrupted.", file=sys.stderr)
+        return EXIT_ERR
+    except Exception as exc:  # noqa: BLE001
+        print(f"error: unexpected failure: {exc}", file=sys.stderr)
+        return EXIT_ERR
 
 
 if __name__ == "__main__":
