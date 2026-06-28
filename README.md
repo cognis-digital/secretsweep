@@ -20,6 +20,82 @@ pip install cognis-secretsweep
 secretsweep scan .            # → prioritized findings in seconds
 ```
 
+
+<!-- cognis:example:start -->
+## 🔎 Example output
+
+Real, reproducible output from the tool — runs offline:
+
+```console
+$ secretsweep-emit --version
+secretsweep 2.1.0
+```
+
+```console
+$ secretsweep-emit --help
+usage: secretsweep [-h] [--version] [--format {table,json}]
+                   {scan,verify,baseline,rules,entropy} ...
+
+Zero-install secret scanner. 50+ provider rules, Shannon-entropy detection, allowlist + baseline, in the spirit of gitleaks and trufflehog.
+
+positional arguments:
+  {scan,verify,baseline,rules,entropy}
+    scan                scan files/dirs/stdin for secrets
+    verify              fail only on secrets not in a baseline (CI)
+    baseline            write a baseline of current findings
+    rules               list bundled provider rules
+    entropy             compute Shannon entropy of a string
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  --format {table,json}
+                        output format (default: table)
+
+Examples:
+  secretsweep scan ./src --format json
+  cat config.yml | secretsweep scan
+  secretsweep scan . --exclude '*/tests/*' --severity high
+  secretsweep baseline . --output .secretsweep.baseline
+  secretsweep verify . --baseline .secretsweep.baseline
+  secretsweep rules --format json
+```
+
+```console
+$ secretsweep-emit rules
+id                         severity  description                                        
+-------------------------  --------  ---------------------------------------------------
+aws-access-key-id          HIGH      AWS Access Key ID                                  
+aws-secret-access-key      CRITICAL  AWS Secret Access Key                              
+aws-session-token          HIGH      AWS Session Token                                  
+aws-mws-key                HIGH      AWS MWS auth token                                 
+gcp-api-key                HIGH      Google API key                                     
+gcp-oauth-client-id        MEDIUM    Google OAuth client ID                             
+gcp-service-account        CRITICAL  GCP service-account private_key_id block           
+firebase-cloud-messaging   HIGH      Firebase Cloud Messaging server key                
+azure-storage-key          CRITICAL  Azure storage account key (AccountKey=)            
+azure-sas-token            MEDIUM    Azure shared-access-signature token                
+azure-ad-client-secret     HIGH      Azure AD client secret                             
+stripe-secret-key          CRITICAL  Stripe secret/restricted key                       
+stripe-publishable-key     LOW       Stripe publishable key                             
+square-access-token        HIGH      Square access token                                
+square-oauth-secret        HIGH      Square OAuth secret                                
+paypal-braintree-token     HIGH      PayPal/Braintree access token                      
+github-pat                 CRITICAL  GitHub personal access token (classic/fine-grained)
+github-oauth               HIGH      GitHub OAuth access token (40 hex with context)    
+gitlab-pat                 HIGH      GitLab personal access token                       
+gitlab-pipeline-token      HIGH      GitLab CI/CD pipeline trigger token                
+npm-access-token           HIGH      npm access token                                   
+pypi-upload-token          HIGH      PyPI upload token                                  
+dockerhub-pat              HIGH      Docker Hub personal access token                   
+atlassian-api-token        HIGH      Atlassian/Jira/Confluence API token                
+slack-token                HIGH      Slack token (bot/user/app/legacy)                
+```
+
+> Blocks above are real `secretsweep` output — reproduce them from a clone.
+
+<!-- cognis:example:end -->
+
 ## Usage — step by step
 
 `secretsweep` is a zero-install secret scanner with 50+ provider rules, Shannon-entropy detection, and allowlist/baseline support. Console script: `secretsweep`.

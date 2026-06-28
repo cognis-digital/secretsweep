@@ -1,0 +1,28 @@
+$ secretsweep-emit --help
+
+usage: secretsweep [-h] [--version] [--format {table,json}]
+                   {scan,verify,baseline,rules,entropy} ...
+
+Zero-install secret scanner. 50+ provider rules, Shannon-entropy detection, allowlist + baseline, in the spirit of gitleaks and trufflehog.
+
+positional arguments:
+  {scan,verify,baseline,rules,entropy}
+    scan                scan files/dirs/stdin for secrets
+    verify              fail only on secrets not in a baseline (CI)
+    baseline            write a baseline of current findings
+    rules               list bundled provider rules
+    entropy             compute Shannon entropy of a string
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  --format {table,json}
+                        output format (default: table)
+
+Examples:
+  secretsweep scan ./src --format json
+  cat config.yml | secretsweep scan
+  secretsweep scan . --exclude '*/tests/*' --severity high
+  secretsweep baseline . --output .secretsweep.baseline
+  secretsweep verify . --baseline .secretsweep.baseline
+  secretsweep rules --format json
